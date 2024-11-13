@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setHistory } from "./Store";
 import {
   Card,
   CardContent,
@@ -13,19 +16,23 @@ import {
   Paper,
 } from "@mui/material";
 
-function createData(marca, modelo, mesReferencia, combustivel, valor) {
-  return { marca, modelo, mesReferencia, combustivel, valor };
-}
-
-const rows = [
-  createData("Toyota", "Corolla", "Outubro", "Gasolina", 120000),
-  createData("Honda", "Civic", "Outubro", "Gasolina", 110000),
-  createData("Chevrolet", "Onix", "Outubro", "Flex", 70000),
-  createData("Ford", "EcoSport", "Outubro", "Diesel", 85000),
-  createData("Hyundai", "HB20", "Outubro", "Flex", 65000),
-];
-
 export default function HistoryTable() {
+  const dispatch = useDispatch();
+  const rows = useSelector((state) => state.history);
+
+  // Recupera o histórico do localStorage ao carregar o componente
+  useEffect(() => {
+    const storedRows = localStorage.getItem("carHistory");
+    if (storedRows) {
+      dispatch(setHistory(JSON.parse(storedRows)));
+    }
+  }, [dispatch]);
+
+  // Salva o histórico no localStorage sempre que o 'rows' for atualizado
+  useEffect(() => {
+    localStorage.setItem("carHistory", JSON.stringify(rows));
+  }, [rows]);
+
   return (
     <Box>
       <Container maxWidth="md">
@@ -44,9 +51,9 @@ export default function HistoryTable() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row) => (
+                  {rows.map((row, index) => (
                     <TableRow
-                      key={row.modelo}
+                      key={index}
                       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                     >
                       <TableCell component="th" scope="row">
@@ -56,7 +63,9 @@ export default function HistoryTable() {
                       <TableCell align="right">{row.mesReferencia}</TableCell>
                       <TableCell align="right">{row.combustivel}</TableCell>
                       <TableCell align="right">
-                        {row.valor.toLocaleString("pt-BR", {
+                        {parseFloat(
+                          row.valor.replace("R$", "").replace(".", "").replace(",", ".")
+                        ).toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",
                         })}
