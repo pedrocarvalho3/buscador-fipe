@@ -74,15 +74,24 @@ export default function CarFinder() {
           `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos/${modelo}/anos`
         );
         const data = await response.json();
-        setAnos(data);
-        setAno("");
+        setAnos(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Erro ao buscar anos:", error);
+        setAnos([]);
       }
     }
 
     fetchAnos();
   }, [marca, modelo]);
+
+  useEffect(() => {
+    setModelo("");
+    setAnos([]);
+  }, [marca]);
+
+  useEffect(() => {
+    setAno("");
+  }, [modelo]);
 
   const validate = () => {
     const newErrors = {};
@@ -198,11 +207,12 @@ export default function CarFinder() {
                   value={ano}
                   onChange={(e) => setAno(e.target.value)}
                 >
-                  {anos.map((ano) => (
-                    <MenuItem key={ano.codigo} value={ano.codigo}>
-                      {ano.nome}
-                    </MenuItem>
-                  ))}
+                  {Array.isArray(anos) &&
+                    anos.map((ano) => (
+                      <MenuItem key={ano.codigo} value={ano.codigo}>
+                        {ano.nome}
+                      </MenuItem>
+                    ))}
                 </Select>
                 {errors.ano && <FormHelperText>{errors.ano}</FormHelperText>}
               </FormControl>
@@ -250,7 +260,6 @@ export default function CarFinder() {
               </Box>
               <Button
                 onClick={handleSave}
-                fullWidth
                 variant="contained"
                 color="secondary"
                 sx={{ mt: 2 }}
