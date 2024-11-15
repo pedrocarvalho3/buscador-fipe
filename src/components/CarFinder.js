@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { addEntry } from "./Store";
+import { useDispatch, useSelector } from "react-redux";
+import { addHistory } from "../redux/historySlice";
 import { Search as SearchIcon } from "@mui/icons-material";
 import {
   Button,
@@ -15,10 +15,12 @@ import {
   Container,
   Typography,
   Box,
+  FormHelperText,
 } from "@mui/material";
 
 export default function CarFinder() {
   const dispatch = useDispatch();
+  const history = useSelector((state) => state.history);
   const [resultado, setResultado] = useState(null);
   const [marcas, setMarcas] = useState([]);
   const [modelos, setModelos] = useState([]);
@@ -26,6 +28,7 @@ export default function CarFinder() {
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     async function fetchMarcas() {
@@ -76,8 +79,19 @@ export default function CarFinder() {
     }
   }, [modelo]);
 
+  const validate = () => {
+    const newErrors = {};
+    if (!marca) newErrors.marca = "Por favor, selecione uma marca.";
+    if (!modelo) newErrors.modelo = "Por favor, selecione um modelo.";
+    if (!ano) newErrors.ano = "Por favor, selecione um ano.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!validate()) return;
+
     try {
       const response = await fetch(
         `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos/${modelo}/anos/${ano}`
@@ -91,14 +105,28 @@ export default function CarFinder() {
 
   const handleSave = () => {
     if (resultado) {
-      const newEntry = {
+      const newHistory = {
         marca: resultado.Marca,
         modelo: resultado.Modelo,
+        anoModelo: resultado.AnoModelo,
         mesReferencia: resultado.MesReferencia,
         combustivel: resultado.Combustivel,
         valor: resultado.Valor,
       };
-      dispatch(addEntry(newEntry));
+
+      const exists = history.some(
+        (item) =>
+          item.marca === newHistory.marca &&
+          item.modelo === newHistory.modelo &&
+          item.anoModelo === newHistory.anoModelo
+      );
+
+      if (exists) {
+        alert("Este carro já foi salvo!");
+        return;
+      }
+
+      dispatch(addHistory(newHistory));
     }
   };
 
@@ -109,7 +137,7 @@ export default function CarFinder() {
           <CardHeader title="Buscar Veículo" />
           <CardContent>
             <form onSubmit={handleSubmit}>
-              <FormControl fullWidth margin="normal">
+              <FormControl fullWidth margin="normal" error={!!errors.marca}>
                 <InputLabel id="marca-label">Marca</InputLabel>
                 <Select
                   labelId="marca-label"
@@ -124,9 +152,17 @@ export default function CarFinder() {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.marca && (
+                  <FormHelperText>{errors.marca}</FormHelperText>
+                )}
               </FormControl>
 
-              <FormControl fullWidth margin="normal" disabled={!marca}>
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.modelo}
+                disabled={!marca}
+              >
                 <InputLabel id="modelo-label">Modelo</InputLabel>
                 <Select
                   labelId="modelo-label"
@@ -141,9 +177,17 @@ export default function CarFinder() {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.modelo && (
+                  <FormHelperText>{errors.modelo}</FormHelperText>
+                )}
               </FormControl>
 
-              <FormControl fullWidth margin="normal" disabled={!modelo}>
+              <FormControl
+                fullWidth
+                margin="normal"
+                error={!!errors.ano}
+                disabled={!modelo}
+              >
                 <InputLabel id="ano-label">Ano</InputLabel>
                 <Select
                   labelId="ano-label"
@@ -158,6 +202,7 @@ export default function CarFinder() {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.ano && <FormHelperText>{errors.ano}</FormHelperText>}
               </FormControl>
 
               <Button
@@ -173,7 +218,9 @@ export default function CarFinder() {
             </form>
           </CardContent>
           {resultado && (
-            <CardActions sx={{ flexDirection: "column", alignItems: "stretch" }}>
+            <CardActions
+              sx={{ flexDirection: "column", alignItems: "stretch" }}
+            >
               <Box
                 sx={{
                   width: "100%",

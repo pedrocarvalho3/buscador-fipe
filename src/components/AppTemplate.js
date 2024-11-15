@@ -32,7 +32,7 @@ export default function BuscadorFIPE() {
       >
         <Container maxWidth="md" sx={{ py: 2 }}>
           <Typography variant="body2" color="textSecondary" align="center">
-            © 2023 Buscador Tabela FIPE. Todos os direitos reservados.
+            © 2024 Buscador Tabela FIPE. Todos os direitos reservados.
           </Typography>
         </Container>
       </Box>

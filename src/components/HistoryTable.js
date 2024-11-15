@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setHistory } from "./Store";
+import { setHistory } from "../redux/historySlice";
 import {
   Card,
   CardContent,
@@ -20,7 +20,6 @@ export default function HistoryTable() {
   const dispatch = useDispatch();
   const rows = useSelector((state) => state.history);
 
-  // Recupera o histórico do localStorage ao carregar o componente
   useEffect(() => {
     const storedRows = localStorage.getItem("carHistory");
     if (storedRows) {
@@ -28,7 +27,6 @@ export default function HistoryTable() {
     }
   }, [dispatch]);
 
-  // Salva o histórico no localStorage sempre que o 'rows' for atualizado
   useEffect(() => {
     localStorage.setItem("carHistory", JSON.stringify(rows));
   }, [rows]);
@@ -64,7 +62,10 @@ export default function HistoryTable() {
                       <TableCell align="right">{row.combustivel}</TableCell>
                       <TableCell align="right">
                         {parseFloat(
-                          row.valor.replace("R$", "").replace(".", "").replace(",", ".")
+                          row.valor
+                            .replace("R$", "")
+                            .replace(".", "")
+                            .replace(",", ".")
                         ).toLocaleString("pt-BR", {
                           style: "currency",
                           currency: "BRL",

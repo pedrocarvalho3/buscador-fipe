@@ -1,15 +1,11 @@
-// App.js
 import { Provider } from "react-redux";
-import store from "./components/Store";
+import store from "./redux/store";
 import AppTemplate from "./components/AppTemplate";
-import HistoryTable from "./components/HistoryTable";
 
 function App() {
   return (
     <Provider store={store}>
-      <AppTemplate>
-        <HistoryTable />
-      </AppTemplate>
+      <AppTemplate />
     </Provider>
   );
 }
