@@ -46,38 +46,43 @@ export default function CarFinder() {
   }, []);
 
   useEffect(() => {
-    if (marca) {
-      async function fetchModelos() {
-        try {
-          const response = await fetch(
-            `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos`
-          );
-          const data = await response.json();
-          setModelos(data.modelos);
-        } catch (error) {
-          console.error("Erro ao buscar modelos:", error);
-        }
+    if (!marca) return;
+
+    async function fetchModelos() {
+      try {
+        const response = await fetch(
+          `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos`
+        );
+        const data = await response.json();
+        setModelos(data.modelos);
+        setAnos([]);
+        setModelo("");
+      } catch (error) {
+        console.error("Erro ao buscar modelos:", error);
       }
-      fetchModelos();
     }
+
+    fetchModelos();
   }, [marca]);
 
   useEffect(() => {
-    if (marca && modelo) {
-      async function fetchAnos() {
-        try {
-          const response = await fetch(
-            `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos/${modelo}/anos`
-          );
-          const data = await response.json();
-          setAnos(data);
-        } catch (error) {
-          console.error("Erro ao buscar anos:", error);
-        }
+    if (!modelo) return;
+
+    async function fetchAnos() {
+      try {
+        const response = await fetch(
+          `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca}/modelos/${modelo}/anos`
+        );
+        const data = await response.json();
+        setAnos(data);
+        setAno("");
+      } catch (error) {
+        console.error("Erro ao buscar anos:", error);
       }
-      fetchAnos();
     }
-  }, [modelo]);
+
+    fetchAnos();
+  }, [marca, modelo]);
 
   const validate = () => {
     const newErrors = {};
@@ -104,30 +109,30 @@ export default function CarFinder() {
   };
 
   const handleSave = () => {
-    if (resultado) {
-      const newHistory = {
-        marca: resultado.Marca,
-        modelo: resultado.Modelo,
-        anoModelo: resultado.AnoModelo,
-        mesReferencia: resultado.MesReferencia,
-        combustivel: resultado.Combustivel,
-        valor: resultado.Valor,
-      };
+    if (!resultado) return;
 
-      const exists = history.some(
-        (item) =>
-          item.marca === newHistory.marca &&
-          item.modelo === newHistory.modelo &&
-          item.anoModelo === newHistory.anoModelo
-      );
+    const newHistory = {
+      marca: resultado.Marca,
+      modelo: resultado.Modelo,
+      anoModelo: resultado.AnoModelo,
+      mesReferencia: resultado.MesReferencia,
+      combustivel: resultado.Combustivel,
+      valor: resultado.Valor,
+    };
 
-      if (exists) {
-        alert("Este carro já foi salvo!");
-        return;
-      }
+    const exists = history.some(
+      (item) =>
+        item.marca === newHistory.marca &&
+        item.modelo === newHistory.modelo &&
+        item.anoModelo === newHistory.anoModelo
+    );
 
-      dispatch(addHistory(newHistory));
+    if (exists) {
+      alert("Este carro já foi salvo!");
+      return;
     }
+
+    dispatch(addHistory(newHistory));
   };
 
   return (
@@ -143,7 +148,6 @@ export default function CarFinder() {
                   labelId="marca-label"
                   id="marca"
                   value={marca}
-                  label="Marca"
                   onChange={(e) => setMarca(e.target.value)}
                 >
                   {marcas.map((marca) => (
@@ -168,7 +172,6 @@ export default function CarFinder() {
                   labelId="modelo-label"
                   id="modelo"
                   value={modelo}
-                  label="Modelo"
                   onChange={(e) => setModelo(e.target.value)}
                 >
                   {modelos.map((modelo) => (
@@ -193,7 +196,6 @@ export default function CarFinder() {
                   labelId="ano-label"
                   id="ano"
                   value={ano}
-                  label="Ano"
                   onChange={(e) => setAno(e.target.value)}
                 >
                   {anos.map((ano) => (
@@ -217,22 +219,13 @@ export default function CarFinder() {
               </Button>
             </form>
           </CardContent>
+
           {resultado && (
             <CardActions
               sx={{ flexDirection: "column", alignItems: "stretch" }}
             >
-              <Box
-                sx={{
-                  width: "100%",
-                  p: 2,
-                  backgroundColor: "#f9f9f9",
-                  borderRadius: 1,
-                  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Detalhes do Veículo
-                </Typography>
+              <Box sx={{ width: "100%", p: 2, backgroundColor: "#f9f9f9" }}>
+                <Typography variant="h6">Detalhes do Veículo</Typography>
                 <Typography variant="body1">
                   <strong>Marca:</strong> {resultado.Marca}
                 </Typography>
