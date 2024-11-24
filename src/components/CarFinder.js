@@ -17,6 +17,7 @@ import {
   Box,
   FormHelperText,
 } from "@mui/material";
+import { Snackbar, Alert } from "@mui/material";
 
 export default function CarFinder() {
   const dispatch = useDispatch();
@@ -29,6 +30,8 @@ export default function CarFinder() {
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
   const [errors, setErrors] = useState({});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
     async function fetchMarcas() {
@@ -137,11 +140,14 @@ export default function CarFinder() {
     );
 
     if (exists) {
-      alert("Este carro já foi salvo!");
+      setSnackbarMessage("Este carro já foi salvo!");
+      setSnackbarOpen(true);
       return;
     }
 
     dispatch(addHistory(newHistory));
+    setSnackbarMessage("Carro salvo com sucesso!");
+    setSnackbarOpen(true);
   };
 
   return (
@@ -269,6 +275,20 @@ export default function CarFinder() {
             </CardActions>
           )}
         </Card>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={4000}
+          onClose={() => setSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setSnackbarOpen(false)}
+            severity="info"
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );
